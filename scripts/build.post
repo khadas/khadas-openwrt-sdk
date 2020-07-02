@@ -1,0 +1,62 @@
+#!/bin/sh
+
+## hyphop ##
+
+#= openwrt fast build packages by sdk
+
+## HOW TO
+
+## ./build [-n] [--no-*] [--only-*]
+
+PR="$(dirname "$0")"
+PN="$(basename "$0")"
+PA="$(realpath "$PR")"
+RN="$(realpath "$0")"
+
+. ${0%.*}.lib
+. ${0%.*}.conf
+
+cd "$PR"
+
+[ "$BUILD_DIR" ] || \
+    BUILD_DIR=../build
+
+[ -d "$BUILD_DIR" ] || \
+    mkdir -p "$BUILD_DIR"
+
+[ "$DOWNLOADS" ] || \
+    DOWNLOADS="$BUILD_DIR"
+
+[ "$DOWNLOADS" ] || \
+    mkdir -p "$DOWNLOADS"
+
+export DOWNLOADS=$DOWNLOADS 
+
+case $PATH in
+    */opt/bin:*);;
+    *)PATH="$PA/../opt/bin:$PATH";;
+esac
+
+
+P="$BUILD_DIR/packages"
+
+
+[ -s "$P" ] && {
+    CMD rm -rf $P
+}
+
+#CMD ln -s $SDK_DIR/bin/packages/$OWARCH/$FEED_NAME "$P"
+
+for d in "$BUILD_DIR/$SDK_DIR/bin/packages/$OWARCH"/*; do
+    b=$(basename $d)
+    echo ">> $b"
+    for p in "$d"/*.ipk; do
+	n=${p##*/}
+	n=${n%.ipk}
+	n2=${n%%_*}
+	grep -q "^$n2" build.packages && {
+	echo " + $n2"
+	}
+    done
+done
+

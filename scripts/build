@@ -1,0 +1,158 @@
+#!/bin/sh
+
+## hyphop ##
+
+#= openwrt fast build packages by sdk
+
+## HOW TO
+
+## ./build [-n] [--no-*] [--only-*]
+
+PR="$(dirname "$0")"
+PN="$(basename "$0")"
+PA="$(realpath "$PR")"
+RN="$(realpath "$0")"
+
+. $0.lib
+. $0.conf
+
+cd "$PR"
+
+[ "$BUILD_DIR" ] || \
+    BUILD_DIR=../build
+
+[ -d "$BUILD_DIR" ] || \
+    mkdir -p "$BUILD_DIR"
+
+[ "$DOWNLOADS" ] || \
+    DOWNLOADS="$BUILD_DIR"
+
+[ "$DOWNLOADS" ] || \
+    mkdir -p "$DOWNLOADS"
+
+export DOWNLOADS=$DOWNLOADS 
+
+case $PATH in
+    */opt/bin:*);;
+    *)PATH="$PA/../opt/bin:$PATH";;
+esac
+
+NO_BUILD=
+NO_UPDATE_FEEDS=
+BUILD_ONLY=
+
+#MAKE_ARGS=
+
+for a in "$@"; do
+    case $a in
+	-u)
+	NO_UPDATE_FEEDS=1
+	;;
+	-n)
+	NOOP=1
+	;;
+	--all)
+	BUILD_ALL_FEED=extra
+	;;
+	--only-*)
+	BUILD_ONLY="$BUILD_ONLY ${a#--only-}"
+	;;
+	--no-*)
+	NO_BUILD="$NO_BUILD ${a#--no-}"
+	;;
+	*)
+	MAKE_ARGS="$MAKE_ARGS $a"
+	;;
+    esac
+done
+
+./download $SDK_LINK || FAIL
+
+( cd $BUILD_DIR
+[ -d $SDK_DIR -a -f $SDK_DIR/Makefile ] || {
+    echo "[i] extract $SDK_FILE"
+    tar -xf "$SDK_FILE" || {
+    rm $SDK_DIR
+    FAIL tar broken $SDK_FILE
+    }
+}
+)
+
+[ -s "$BUILD_DIR"/packages ] && \
+    rm "$BUILD_DIR"/packages
+ln -sf "$SDK_DIR/bin/packages/$OWARCH" "$BUILD_DIR"/packages || FAIL
+
+( cd $BUILD_DIR/$SDK_DIR || FAIL
+
+    echo "$FEEDS" > feeds.conf.new
+
+[ -s feeds.conf ] || \
+    cp feeds.conf.new feeds.conf
+
+## need check ??!!!
+diff feeds.conf.new feeds.conf
+
+[ "$NO_UPDATE_FEEDS" ] || \
+./scripts/feeds update || FAIL
+
+)
+
+[ "$BUILD_ALL_FEED" ] && {
+cd $BUILD_DIR/$SDK_DIR
+echo "[i] build all FEED: $BUILD_ALL_FEED"
+./scripts/feeds list -r $BUILD_ALL_FEED | tee tmp/feed_list
+while read l; do
+    p=${l%% *}
+    [ "${NO_BUILD%* $p*}" = "$NO_BUILD" ] && \
+    BUILD_PKGS="$BUILD_PKGS $p"
+done < tmp/feed_list
+
+cd -
+}
+
+
+[ "$BUILD_ONLY" ] || {
+
+[ "$NO_BUILD" ] && {
+echo "[i] no build $NO_BUILD"
+}
+
+echo "[i] BUILD $BUILD_PKGS"
+
+[ "$BUILD_PKGS" ] || \
+for p in $(grep -v ^\# "$RN.packages"); do
+    [ "${NO_BUILD%* $p*}" = "$NO_BUILD" ] && \
+    BUILD_PKGS="$BUILD_PKGS $p"
+done
+
+}
+
+[ "$BUILD_ONLY" ] && {
+    BUILD_PKGS="$BUILD_ONLY"
+}
+
+echo "[i] BUILD $BUILD_PKGS"
+
+BSDK="$BUILD_DIR/$SDK_DIR"
+( cd $BSDK
+
+./scripts/feeds uninstall -a || FAIL
+./scripts/feeds install -p $FEED_NAME $BUILD_PKGS || FAIL
+
+echo "" > package/linux/Makefile
+
+make defconfig || FAIL
+
+#$PA/config_merge -r .config $(grep -v ^\# "$RN".config.overla* ) || FAIL
+cd $PA
+for c in build.config.*; do
+    echo "[i] merge config $c"
+    ./config_merge -r "$BSDK/".config -c=$c || FAIL
+done
+cd - >/dev/null
+
+[ "$NOOP" ] || \
+make $MAKE_ARGS || FAIL
+
+)
+

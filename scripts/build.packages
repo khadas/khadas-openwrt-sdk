@@ -1,0 +1,32 @@
+## hyphop ##
+
+#= build packages list
+
+dialog
+exfat-utils
+i2c
+uinput
+squashfs-tools
+uboot-mkimage
+uinput
+xxhash
+zstd
+pixz
+pigz
+triggerhappy
+megatools
+brcmfmac-khadas
+
+terminus-font
+
+## replace
+
+busybox
+curl
+dropbear
+
+## fun
+
+vitetris
+ascii-patrol
+

@@ -1,0 +1,62 @@
+#!/bin/sh
+
+## hyphop ##
+
+#= build lib
+
+FAIL(){
+    echo "[e] stop fail $@">&2
+    exit 1
+}
+
+CMD(){
+    echo "[#] $@">&2
+    "$@"
+}
+
+DL() {
+
+    echo "[i] DL $@">&2
+
+    F="$(basename $1)"
+    T="$2"
+    [ "$T" ] || T="$DOWNLOADS"
+    S="$T/$F"
+    R=
+    [ -f "$S" ] && {
+
+    [ -s "$S.md5sum" ] && {
+
+    echo "[i] $F already downloaded">&2
+    R="$S"
+    return
+
+    }
+
+    CMD rm "$S"
+    
+    }
+
+    [ -f "$S" ] || {
+    case "$DL_PROG" in
+        curl)
+        CMD curl -f -jkL "$1" -o "$S" -#
+        curl_code=$?
+        [ "$curl_code" = "0" ] || {
+            echo "[w] curl exit $curl_code :: $1">&2
+	[ -f "$S" ] && rm "$S"
+	return 1
+        }
+        ;;
+        *)
+        CMD wget "$1" -O"$S" || return 1
+        ;;
+    esac
+    R=$S
+    }
+
+    [ -s "$S.md5sum" ] || {
+    CMD md5sum "$S" | tee "$S.md5sum"
+    }
+
+}
