@@ -8,6 +8,10 @@ openwrt packages builder
     cd khadas-openwrt-sdk
     ./scripts/build
 
+## BUILD ARGS
+
+    ./scripts/build [openwrt make args] [args]
+
 ## related projects
 
 + https://github.com/krescue/krescue
