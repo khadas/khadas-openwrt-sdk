@@ -1,6 +1,6 @@
 !.gitignore
 /bin
-/build
+/*build*
 /tmp
 /opt
 /dl

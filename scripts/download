@@ -9,7 +9,7 @@
 	[ "$MAXTRY" ] || \
 	    MAXTRY=30
 	[ "$DL_MIN_SPEED" ] || \
-	    DL_MIN_SPEED=10000
+	    DL_MIN_SPEED=3000
 	[ "$DL_MIN_SPEED_TIME" ] || \
 	    DL_MIN_SPEED_TIME=3
 
