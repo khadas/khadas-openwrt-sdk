@@ -84,16 +84,20 @@ ln -sf "$SDK_DIR/bin/packages/$OWARCH" "$BUILD_DIR"/packages || FAIL
 
 ( cd $BUILD_DIR/$SDK_DIR || FAIL
 
-    echo "$FEEDS" > feeds.conf.new
+#   echo "$FEEDS" > feeds.conf
+   echo "$FEEDS" > feeds.conf.new
 
 [ -s feeds.conf ] || \
     cp feeds.conf.new feeds.conf
 
 ## need check ??!!!
-diff feeds.conf.new feeds.conf
+diff feeds.conf.new feeds.conf || {
+    mv feeds.conf feeds.conf.old
+    mv feeds.conf.new feeds.conf
+}
 
 [ "$NO_UPDATE_FEEDS" ] || \
-./scripts/feeds update || FAIL
+    ./scripts/feeds update || FAIL
 
 )
 
