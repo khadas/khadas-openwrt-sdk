@@ -66,7 +66,16 @@ for a in "$@"; do
     esac
 done
 
-./download $SDK_LINK || FAIL
+#./download $SDK_LINK || FAIL
+
+CHK=$(basename "$SDK_LINK_RSYNC").time
+
+[ -s $DOWNLOADS/$CHK ] || {
+echo "[i] download $SDK_LINK_RSYNC">&2
+rsync -av --inplace --progress $SDK_LINK_RSYNC $DOWNLOADS && {
+date > $DOWNLOADS/$CHK
+}
+}
 
 ( cd $BUILD_DIR
 [ -d $SDK_DIR -a -f $SDK_DIR/Makefile ] || {
