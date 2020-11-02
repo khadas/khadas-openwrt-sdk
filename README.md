@@ -12,6 +12,11 @@ openwrt packages builder
 
     ./scripts/build [openwrt make args] [args]
 
+## REQUIRED
+
++ curl
++ rsync
+
 ## related projects
 
 + https://github.com/krescue/krescue
