@@ -1,6 +1,4 @@
-/*
-# khadas openwrt sdk [![Build Status](https://travis-ci.org/krescue/khadas-openwrt-sdk.svg?branch=master)](https://travis-ci.org/krescue/khadas-openwrt-sdk)
-*/
+# khadas openwrt sdk [![Build Status](https://github.com/khadas/khadas-openwrt-sdk/workflows/Build/badge.svg)](https://github.com/khadas/khadas-openwrt-sdk/actions)
 
 openwrt packages builder
 
