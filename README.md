@@ -12,6 +12,14 @@ openwrt packages builder
 
     ./scripts/build [openwrt make args] [args]
 
+## OpenWRT build packages
+
+
+    make package/ncurses/compile
+    make package/ncurses/install
+
++ https://openwrt.org/docs/guide-developer/toolchain/single.package
+
 ## REQUIRED
 
 + curl
